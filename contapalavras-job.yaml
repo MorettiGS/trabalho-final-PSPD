@@ -11,7 +11,7 @@ spec:
       containers:
       - name: worker
         image: gabrielcosta513/conta_palavras:latest
-        args: ["/data/part-$(JOB_COMPLETION_INDEX)", "/data/output-part-$(JOB_COMPLETION_INDEX).txt"]
+        args: ["mnt/data/words.txt_part_$(JOB_COMPLETION_INDEX)", "mnt/data/output_part_$(JOB_COMPLETION_INDEX).txt"]
         env:
         - name: JOB_COMPLETION_INDEX
           valueFrom:
@@ -19,7 +19,7 @@ spec:
               fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
         volumeMounts:
         - name: data
-          mountPath: /data
+          mountPath: /mnt
       volumes:
       - name: data
         persistentVolumeClaim:

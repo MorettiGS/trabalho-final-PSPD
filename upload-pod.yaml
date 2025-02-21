@@ -1,0 +1,17 @@
+# upload-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: file-uploader
+spec:
+  containers:
+  - name: uploader
+    image: alpine
+    command: ["sleep", "3600"]
+    volumeMounts:
+    - name: data
+      mountPath: /mnt
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: contapalavras-pvc

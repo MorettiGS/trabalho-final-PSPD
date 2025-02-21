@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ls
+spec:
+  template:
+    spec:
+      containers:
+        - name: splitter
+          image: python:3.10-alpine  # Using Python-based image
+          command: ["python3", "-c"]
+          args:
+            - |
+              import os
+              os.system("ls mnt/data/")
+          volumeMounts:
+            - name: data
+              mountPath: /mnt  # Mounting the PVC to access words.txt
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: contapalavras-pvc  # PVC with the input file
+      restartPolicy: Never
+

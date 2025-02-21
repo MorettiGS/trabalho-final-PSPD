@@ -6,17 +6,44 @@ spec:
   template:
     spec:
       containers:
-      - name: splitter
-        image: alpine:latest
-        command: ["sh", "-c"]
-        args:
-          - apk add coreutils && 
-            split -n l/4 /data/words.txt /data/part-
-      volumeMounts:
-        - name: data
-          mountPath: /data
+        - name: splitter
+          image: python:3.10-alpine  # Using Python-based image
+          command: ["python3", "-c"]
+          args:
+            - |
+              def split_file(input_file, num_parts=4):
+                  # Open the input file
+                  with open(input_file, 'r') as file:
+                      lines = file.readlines()
+
+                  # Calculate the number of lines in each part
+                  total_lines = len(lines)
+                  lines_per_part = total_lines // num_parts
+
+                  # Split the lines into 4 parts
+                  for i in range(num_parts):
+                      start_index = i * lines_per_part
+                      # Ensure the last part takes the remaining lines
+                      end_index = (i + 1) * lines_per_part if i < num_parts - 1 else total_lines
+
+                      part_lines = lines[start_index:end_index]
+                      part_filename = f"{input_file}_part_{i}"
+
+                      # Write the part to a new file
+                      with open(part_filename, 'w') as part_file:
+                          part_file.writelines(part_lines)
+
+                      print(f"Created file: {part_filename}")
+
+              # Example usage
+              input_file = 'mnt/data/words.txt'  # The file path inside the container
+              split_file(input_file)
+          volumeMounts:
+            - name: data
+              mountPath: /mnt  # Mounting the PVC to access words.txt
       volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: contapalavras-pvc
+        - name: data
+          persistentVolumeClaim:
+            claimName: contapalavras-pvc  # PVC with the input file
       restartPolicy: Never
+
