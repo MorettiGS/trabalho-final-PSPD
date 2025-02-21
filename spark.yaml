@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spark-wordcount
+spec:
+  template:
+    spec:
+      containers:
+        - name: spark-wordcount
+          image: bitnami/spark:latest
+          command: ["/opt/bitnami/spark/bin/spark-submit"]
+          args:
+            - "--class"
+            - "org.apache.spark.examples.JavaWordCount"
+            - "/opt/bitnami/spark/examples/jars/spark-examples_2.12-3.3.0.jar"
+            - "file:///opt/bitnami/spark/README.md"
+      restartPolicy: Never
+  backoffLimit: 4
