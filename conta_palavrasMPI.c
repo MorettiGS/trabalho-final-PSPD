@@ -27,13 +27,13 @@ unsigned int hash(const char *str) {
 }
 
 // Insere ou atualiza a contagem de uma palavra na tabela hash
-void insertWord(const char *word) {
+void insertWord(const char *word, long count) {
     unsigned int index = hash(word);
     WordNode *node = hashTable[index];
 
     while (node) {
         if (strcmp(node->word, word) == 0) {
-            node->count++;
+            node->count+=count;
             return;
         }
         node = node->next;
@@ -71,11 +71,13 @@ void countWordsFromFile(const char *filename, int rank, int size) {
     fseek(file, 0, SEEK_END);
     long fileSize = ftell(file);
     fseek(file, 0, SEEK_SET);
-
+    printf("Total size: %ld\n", fileSize); 
     // Calcula o número total de palavras no arquivo
     long totalWords = fileSize / WORD_BYTES;
+    printf("%ld", totalWords); 
     // Divide as palavras entre os processos MPI
     long wordsPerProcess = totalWords / size;
+    printf("word porprocess : %ld", wordsPerProcess);
     long startWord = rank * wordsPerProcess;
     long endWord = (rank == size - 1) ? totalWords : startWord + wordsPerProcess;
 
@@ -83,19 +85,21 @@ void countWordsFromFile(const char *filename, int rank, int size) {
     fseek(file, startWord * WORD_BYTES, SEEK_SET);
 
     // Buffer para armazenar as palavras lidas por este processo
-    char word[WORD_BYTES + 1]; // +1 para o terminador nulo
+    char word[WORD_BYTES]; // +1 para o terminador nulo
 
     // Paraleliza o processamento das palavras com OpenMP
     #pragma omp parallel for private(word)
     for (long i = startWord; i < endWord; i++) {
         fseek(file, i * WORD_BYTES, SEEK_SET); // Posiciona o ponteiro do arquivo
-        fread(word, 1, WORD_BYTES, file); // Lê a palavra
-        word[WORD_BYTES] = '\0'; // Adiciona terminador nulo
+        fread(word, 1, WORD_BYTES, file); 
+	for(int i=0; i<4; i++)
+		printf("%c", word[i]); 
+        word[WORD_BYTES-1] = '\0'; // Adiciona terminador nulo
 
         cleanWord(word); // Limpa a palavra (remove pontuação e converte para minúsculas)
         if (strlen(word) > 0) {
             #pragma omp critical
-            insertWord(word); // Insere a palavra na tabela hash
+            insertWord(word, 1); // Insere a palavra na tabela hash
         }
     }
 
@@ -176,7 +180,13 @@ int main(int argc, char *argv[]) {
                     node = (WordNode *)malloc(sizeof(WordNode));
                     MPI_Recv(node->word, MAX_WORD_LEN, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                     MPI_Recv(&node->count, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    insertWord(node->word);
+                    insertWord(node->word, node->count);
+		    printf("estlou recebendo"); 
+		    for(int i=0;i<4; i++){
+		    	printf("%c", node->word[i]); 
+		    }
+
+		    printf("\n%d\n", count); 
                     free(node);
                 }
             }
