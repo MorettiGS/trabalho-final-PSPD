@@ -1,4 +1,4 @@
-#include <stdio.h>
+v#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -71,13 +71,10 @@ void countWordsFromFile(const char *filename, int rank, int size) {
     fseek(file, 0, SEEK_END);
     long fileSize = ftell(file);
     fseek(file, 0, SEEK_SET);
-    printf("Total size: %ld\n", fileSize); 
     // Calcula o número total de palavras no arquivo
     long totalWords = fileSize / WORD_BYTES;
-    printf("%ld", totalWords); 
     // Divide as palavras entre os processos MPI
     long wordsPerProcess = totalWords / size;
-    printf("word porprocess : %ld", wordsPerProcess);
     long startWord = rank * wordsPerProcess;
     long endWord = (rank == size - 1) ? totalWords : startWord + wordsPerProcess;
 
@@ -92,8 +89,6 @@ void countWordsFromFile(const char *filename, int rank, int size) {
     for (long i = startWord; i < endWord; i++) {
         fseek(file, i * WORD_BYTES, SEEK_SET); // Posiciona o ponteiro do arquivo
         fread(word, 1, WORD_BYTES, file); 
-	for(int i=0; i<4; i++)
-		printf("%c", word[i]); 
         word[WORD_BYTES-1] = '\0'; // Adiciona terminador nulo
 
         cleanWord(word); // Limpa a palavra (remove pontuação e converte para minúsculas)
@@ -126,7 +121,7 @@ void printWordCounts() {
         }
     }
 
-    qsort(wordArray, count, sizeof(WordNode *), compareWords);
+	    //qsort(wordArray, count, sizeof(WordNode *), compareWords);
 
     for (int i = 0; i < count; i++) {
         printf("%s: %d\n", wordArray[i]->word, wordArray[i]->count);
@@ -181,12 +176,6 @@ int main(int argc, char *argv[]) {
                     MPI_Recv(node->word, MAX_WORD_LEN, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                     MPI_Recv(&node->count, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                     insertWord(node->word, node->count);
-		    printf("estlou recebendo"); 
-		    for(int i=0;i<4; i++){
-		    	printf("%c", node->word[i]); 
-		    }
-
-		    printf("\n%d\n", count); 
                     free(node);
                 }
             }
@@ -215,5 +204,6 @@ int main(int argc, char *argv[]) {
     MPI_Finalize();
     return 0;
 }
+
 
 
