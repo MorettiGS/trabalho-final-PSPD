@@ -7,27 +7,25 @@ spec:
     spec:
       containers:
       - name: aggregator
-        image: python:alpine
-        command: ["sh", "-c"]
+        image: python:3.10-alpine
+        command: ["python3", "-c"]
         args:
           - |
-            apk add --no-cache python3 &&
-            python3 -c "
             import os, glob
             from collections import defaultdict
             counts = defaultdict(int)
-            for file in glob.glob('/data/output-part-*.txt'):
+            for file in glob.glob('mnt/data/output_part_*.txt'):
                 with open(file) as f:
                     for line in f:
                         word, cnt = line.strip().split()
                         counts[word] += int(cnt)
-            with open('/data/final-count.txt', 'w') as f:
+            with open('mnt/data/final_count.txt', 'w') as f:
                 for word in sorted(counts.keys()):
                     f.write(f'{word} {counts[word]}\\n')
-            "
+                    print(f'{word} {counts[word]}\\n')
         volumeMounts:
         - name: data
-          mountPath: /data
+          mountPath: /mnt
       volumes:
       - name: data
         persistentVolumeClaim:
