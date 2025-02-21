@@ -37,7 +37,7 @@ void criarArquivo(const char *nomeArquivo, int quantidade) {
 }
 
 int main() {
-    int quantidade = 1000000; // Quantidade de palavras a gerar
+    int quantidade = 20000000; // Quantidade de palavras a gerar
     criarArquivo("words.txt", quantidade); // Cria o arquivo words.txt
     printf("Arquivo 'words.txt' criado com sucesso!\n");
     return 0;

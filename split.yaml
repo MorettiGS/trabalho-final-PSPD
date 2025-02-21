@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: split-file
+spec:
+  template:
+    spec:
+      containers:
+      - name: splitter
+        image: alpine:latest
+        command: ["sh", "-c"]
+        args:
+          - apk add coreutils && 
+            split -n l/4 /data/words.txt /data/part-
+      volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: contapalavras-pvc
+      restartPolicy: Never

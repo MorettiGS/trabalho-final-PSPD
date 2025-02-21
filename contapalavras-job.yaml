@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: contapalavras
+spec:
+  completions: 4
+  parallelism: 4
+  completionMode: Indexed
+  template:
+    spec:
+      containers:
+      - name: worker
+        image: gabrielcosta513/conta_palavras:latest
+        args: ["/data/part-$(JOB_COMPLETION_INDEX)", "/data/output-part-$(JOB_COMPLETION_INDEX).txt"]
+        env:
+        - name: JOB_COMPLETION_INDEX
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: contapalavras-pvc
+      restartPolicy: Never

@@ -83,8 +83,7 @@ int compareWords(const void *a, const void *b) {
     return strcmp(wa->word, wb->word);
 }
 
-// Exibe a contagem de palavras ordenada
-void printWordCounts() {
+void writeWordCounts(FILE *out) {
     WordNode *wordArray[HASH_SIZE];
     int count = 0;
 
@@ -99,7 +98,7 @@ void printWordCounts() {
     qsort(wordArray, count, sizeof(WordNode *), compareWords);
 
     for (int i = 0; i < count; i++) {
-        printf("%s: %d\n", wordArray[i]->word, wordArray[i]->count);
+        fprintf(out, "%s %d\n", wordArray[i]->word, wordArray[i]->count);
     }
 }
 
@@ -117,13 +116,21 @@ void freeMemory() {
 
 // Função principal
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Uso: %s <arquivo_de_texto>\n", argv[0]);
+    if (argc < 3) {
+        printf("Uso: %s <arquivo_de_texto> <arquivo_de_saida>\n", argv[0]);
         return 1;
     }
 
     countWordsFromFile(argv[1]);
-    printWordCounts();
+    
+    FILE *out = fopen(argv[2], "w");
+    if (!out) {
+        perror("Error opening output file");
+        return 1;
+    }
+    writeWordCounts(out);
+    fclose(out);
+    
     freeMemory();
     return 0;
 }

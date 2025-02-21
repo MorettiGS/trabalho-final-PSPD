@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: aggregator
+spec:
+  template:
+    spec:
+      containers:
+      - name: aggregator
+        image: python:alpine
+        command: ["sh", "-c"]
+        args:
+          - |
+            apk add --no-cache python3 &&
+            python3 -c "
+            import os, glob
+            from collections import defaultdict
+            counts = defaultdict(int)
+            for file in glob.glob('/data/output-part-*.txt'):
+                with open(file) as f:
+                    for line in f:
+                        word, cnt = line.strip().split()
+                        counts[word] += int(cnt)
+            with open('/data/final-count.txt', 'w') as f:
+                for word in sorted(counts.keys()):
+                    f.write(f'{word} {counts[word]}\\n')
+            "
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: contapalavras-pvc
+      restartPolicy: Never
